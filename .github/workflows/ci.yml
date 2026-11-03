@@ -1,0 +1,182 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:45
+    steps:
+      - name: Install the toolchain
+        run: dnf -y install --setopt=install_weak_deps=False cmake gcc-c++ git-core ninja-build python3.14
+
+      - uses: actions/checkout@v7
+
+      - name: Install clang-format and cmake-format
+        run: |
+          python3.14 -m venv /opt/venv
+          /opt/venv/bin/pip install --disable-pip-version-check -r requirements-dev.txt
+          echo /opt/venv/bin >> "$GITHUB_PATH"
+
+      - name: Check formatting
+        run: cmake --workflow --preset format-check
+
+  build:
+    name: Build and test (${{ matrix.preset }})
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:45
+    strategy:
+      fail-fast: false
+      matrix:
+        preset: [gcc-debug, gcc-release, clang-debug, clang-release]
+    steps:
+      - name: Install the toolchain
+        run: >-
+          dnf -y install --setopt=install_weak_deps=False
+          clang cmake compiler-rt gcc-c++ git-core libasan libubsan ninja-build
+
+      - uses: actions/checkout@v7
+
+      - name: Configure, build and test
+        run: cmake --workflow --preset ${{ matrix.preset }}
+
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:45
+    steps:
+      - name: Install the toolchain
+        run: dnf -y install --setopt=install_weak_deps=False cmake gcc-c++ git-core ninja-build python3.14
+
+      - uses: actions/checkout@v7
+
+      - name: Install gcovr
+        run: |
+          python3.14 -m venv /opt/venv
+          /opt/venv/bin/pip install --disable-pip-version-check -r requirements-dev.txt
+          echo /opt/venv/bin >> "$GITHUB_PATH"
+
+      - name: Build, test and enforce the coverage thresholds
+        run: cmake --workflow --preset coverage
+
+      - name: Publish the coverage summary
+        if: always()
+        run: |
+          if [ -f build/coverage/coverage/summary.md ]; then
+            cat build/coverage/coverage/summary.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload the coverage report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-report
+          path: build/coverage/coverage/
+          if-no-files-found: ignore
+
+  package:
+    name: Package
+    needs: [format, build, coverage]
+    runs-on: ubuntu-latest
+    container: registry.fedoraproject.org/fedora:45
+    steps:
+      - name: Install the toolchain
+        run: >-
+          dnf -y install --setopt=install_weak_deps=False
+          cmake gcc-c++ git-core glibc-static libstdc++-static ninja-build rpm-build
+
+      - uses: actions/checkout@v7
+
+      - name: Build, test and package
+        run: cmake --workflow --preset dist
+
+      - name: Upload the packages
+        uses: actions/upload-artifact@v7
+        with:
+          name: RoadOfSalvation-linux-x86_64
+          path: dist/
+          if-no-files-found: error
+
+  verify:
+    name: Install on ${{ matrix.distro }}
+    needs: package
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: ubuntu:24.04
+            install: dpkg -i /dist/*.deb
+          - distro: debian:13
+            install: dpkg -i /dist/*.deb
+          - distro: registry.fedoraproject.org/fedora:45
+            install: dnf -y install /dist/*.rpm
+          - distro: opensuse/tumbleweed
+            install: zypper --non-interactive install --allow-unsigned-rpm /dist/*.rpm
+          - distro: archlinux:latest
+            install: sh /dist/*.sh --prefix=/usr/local --skip-license --exclude-subdir
+          - distro: alpine:latest
+            install: sh /dist/*.sh --prefix=/usr/local --skip-license --exclude-subdir
+          - distro: almalinux:8
+            install: >-
+              tar -xzf /dist/*.tar.gz -C /opt &&
+              ln -s /opt/RoadOfSalvation-*/bin/RoadOfSalvation /usr/local/bin/RoadOfSalvation
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: RoadOfSalvation-linux-x86_64
+          path: dist
+
+      - name: Install the package as root
+        env:
+          DISTRO: ${{ matrix.distro }}
+          INSTALL: ${{ matrix.install }}
+        run: |
+          docker run --name installed -v "$PWD/dist:/dist:ro" "$DISTRO" sh -euc "$INSTALL"
+          docker commit installed roadofsalvation-installed
+
+      - name: Run the game as an unprivileged user
+        run: |
+          output="$(docker run --rm --user 65534:65534 roadofsalvation-installed RoadOfSalvation)"
+          echo "$output"
+          grep -q "The heroes name is: hero" <<< "$output"
+
+  release:
+    name: Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: RoadOfSalvation-linux-x86_64
+          path: dist
+
+      - name: Check that the tag matches the project version
+        run: |
+          if ! ls dist/RoadOfSalvation-"${GITHUB_REF_NAME#v}"-* > /dev/null 2>&1; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match the project version in CMakeLists.txt"
+            exit 1
+          fi
+
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: >-
+          gh release create "$GITHUB_REF_NAME" dist/*
+          --repo "$GITHUB_REPOSITORY" --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
