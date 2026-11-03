@@ -1,0 +1,14 @@
+.git
+.github
+.idea
+.vscode
+.cache
+build
+cmake-build-*
+install
+dist
+Testing
+Dockerfile
+docker-compose.yml
+.dockerignore
+**/.DS_Store

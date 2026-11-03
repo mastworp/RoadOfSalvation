@@ -1,0 +1,41 @@
+name: roadofsalvation
+
+x-toolchain: &toolchain
+  image: roadofsalvation-toolchain
+  build:
+    context: .
+    target: toolchain
+  working_dir: /src
+  volumes:
+    - .:/src
+    - ./build/docker:/src/build
+
+services:
+  dev:
+    <<: *toolchain
+    stdin_open: true
+    tty: true
+    command: bash
+
+  test:
+    <<: *toolchain
+    command: sh -c "cmake --workflow --preset gcc-debug && cmake --workflow --preset clang-debug"
+
+  format-check:
+    <<: *toolchain
+    command: cmake --workflow --preset format-check
+
+  coverage:
+    <<: *toolchain
+    command: cmake --workflow --preset coverage
+
+  package:
+    <<: *toolchain
+    command: cmake --workflow --preset dist
+
+  game:
+    image: roadofsalvation
+    build:
+      context: .
+    stdin_open: true
+    tty: true
