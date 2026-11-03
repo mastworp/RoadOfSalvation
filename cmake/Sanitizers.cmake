@@ -11,8 +11,7 @@ endif()
 
 add_library(sanitizers INTERFACE)
 add_library(RoadOfSalvation::sanitizers ALIAS sanitizers)
-target_compile_options(
-  sanitizers INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer
-                       -fno-sanitize-recover=all)
+target_compile_options(sanitizers INTERFACE -fsanitize=address,undefined -fno-omit-frame-pointer
+                                            -fno-sanitize-recover=all)
 target_link_options(sanitizers INTERFACE -fsanitize=address,undefined)
 message(STATUS "Sanitizers are enabled.")
