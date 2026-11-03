@@ -1,0 +1,68 @@
+{
+  "professions": [
+    {
+      "id": "alchemist",
+      "stats": {
+        "level": 1,
+        "hp": 100,
+        "mp": 500,
+        "vigor": 7,
+        "mana": 15,
+        "attack": 7,
+        "defense": 5,
+        "special_attack": 15,
+        "special_defense": 13,
+        "accuracy": 11,
+        "luck": 9
+      }
+    },
+    {
+      "id": "crusader",
+      "stats": {
+        "level": 1,
+        "hp": 300,
+        "mp": 150,
+        "vigor": 10,
+        "mana": 7,
+        "attack": 10,
+        "defense": 12,
+        "special_attack": 10,
+        "special_defense": 12,
+        "accuracy": 10,
+        "luck": 5
+      }
+    },
+    {
+      "id": "scout",
+      "stats": {
+        "level": 1,
+        "hp": 200,
+        "mp": 70,
+        "vigor": 8,
+        "mana": 3,
+        "attack": 15,
+        "defense": 7,
+        "special_attack": 3,
+        "special_defense": 3,
+        "accuracy": 15,
+        "luck": 17
+      }
+    },
+    {
+      "id": "none",
+      "stats": {
+        "level": 1,
+        "hp": 100,
+        "mp": 100,
+        "vigor": 10,
+        "mana": 10,
+        "attack": 10,
+        "defense": 10,
+        "special_attack": 10,
+        "special_defense": 10,
+        "accuracy": 10,
+        "luck": 10
+      }
+    }
+  ]
+}
