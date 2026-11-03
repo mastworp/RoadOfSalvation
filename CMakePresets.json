@@ -11,51 +11,368 @@
       "hidden": true,
       "generator": "Ninja",
       "binaryDir": "${sourceDir}/build/${presetName}",
+      "installDir": "${sourceDir}/install/${presetName}",
       "cacheVariables": {
         "CMAKE_COMPILE_WARNING_AS_ERROR": "ON"
       }
     },
     {
+      "name": "gcc",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "g++"
+      }
+    },
+    {
       "name": "clang",
-      "displayName": "apple clang",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_CXX_COMPILER": "clang++"
+      }
+    },
+    {
+      "name": "debug",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "release",
+      "hidden": true,
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "gcc-debug",
+      "displayName": "GCC Debug",
+      "description": "GCC debug build with ASan and UBSan.",
+      "inherits": ["base", "gcc", "debug"]
+    },
+    {
+      "name": "gcc-release",
+      "displayName": "GCC Release",
+      "description": "Optimized GCC build.",
+      "inherits": ["base", "gcc", "release"]
+    },
+    {
+      "name": "clang-debug",
+      "displayName": "Clang Debug",
+      "description": "Clang debug build with ASan and UBSan.",
+      "inherits": ["base", "clang", "debug"]
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Clang Release",
+      "description": "Optimized Clang build.",
+      "inherits": ["base", "clang", "release"]
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage",
+      "description": "GCC debug build instrumented for gcov coverage.",
+      "inherits": ["base", "gcc", "debug"],
+      "cacheVariables": {
+        "ENABLE_COVERAGE": "ON",
+        "ENABLE_SANITIZERS": "OFF"
+      }
+    },
+    {
+      "name": "dist",
+      "displayName": "Distribution",
+      "description": "Statically linked release build for the distro-independent packages.",
+      "inherits": ["base", "gcc", "release"],
+      "cacheVariables": {
+        "ENABLE_STATIC_LINKING": "ON"
+      },
+      "condition": {
+        "type": "equals",
+        "lhs": "${hostSystemName}",
+        "rhs": "Linux"
+      }
+    },
+    {
+      "name": "format",
+      "displayName": "Formatting",
+      "description": "Lightweight tree that only provides the clang-format and cmake-format targets.",
       "inherits": "base",
       "cacheVariables": {
-        "CMAKE_C_COMPILER": "clang",
-        "CMAKE_CXX_COMPILER": "clang++"
+        "BUILD_TESTS": "OFF",
+        "ENABLE_SANITIZERS": "OFF"
       }
     }
   ],
   "buildPresets": [
     {
-      "name": "clang",
-      "configurePreset": "clang"
+      "name": "gcc-debug",
+      "configurePreset": "gcc-debug"
+    },
+    {
+      "name": "gcc-release",
+      "configurePreset": "gcc-release"
+    },
+    {
+      "name": "clang-debug",
+      "configurePreset": "clang-debug"
+    },
+    {
+      "name": "clang-release",
+      "configurePreset": "clang-release"
+    },
+    {
+      "name": "coverage",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "coverage-report",
+      "displayName": "Coverage report and guard",
+      "configurePreset": "coverage",
+      "targets": ["coverage"]
+    },
+    {
+      "name": "dist",
+      "configurePreset": "dist"
+    },
+    {
+      "name": "gcc-debug-install",
+      "displayName": "Install GCC Debug",
+      "configurePreset": "gcc-debug",
+      "targets": ["install"]
+    },
+    {
+      "name": "gcc-release-install",
+      "displayName": "Install GCC Release",
+      "configurePreset": "gcc-release",
+      "targets": ["install"]
+    },
+    {
+      "name": "clang-debug-install",
+      "displayName": "Install Clang Debug",
+      "configurePreset": "clang-debug",
+      "targets": ["install"]
+    },
+    {
+      "name": "clang-release-install",
+      "displayName": "Install Clang Release",
+      "configurePreset": "clang-release",
+      "targets": ["install"]
+    },
+    {
+      "name": "dist-install",
+      "displayName": "Install Distribution",
+      "configurePreset": "dist",
+      "targets": ["install"]
+    },
+    {
+      "name": "format",
+      "displayName": "Apply clang-format and cmake-format",
+      "configurePreset": "format",
+      "targets": ["format"]
+    },
+    {
+      "name": "format-check",
+      "displayName": "Check clang-format and cmake-format",
+      "configurePreset": "format",
+      "targets": ["format-check"]
     }
   ],
   "testPresets": [
     {
-      "name": "clang",
-      "configurePreset": "clang",
+      "name": "base",
+      "hidden": true,
       "output": {
         "outputOnFailure": true
+      },
+      "execution": {
+        "noTestsAction": "error"
+      }
+    },
+    {
+      "name": "gcc-debug",
+      "inherits": "base",
+      "configurePreset": "gcc-debug"
+    },
+    {
+      "name": "gcc-release",
+      "inherits": "base",
+      "configurePreset": "gcc-release"
+    },
+    {
+      "name": "clang-debug",
+      "inherits": "base",
+      "configurePreset": "clang-debug"
+    },
+    {
+      "name": "clang-release",
+      "inherits": "base",
+      "configurePreset": "clang-release"
+    },
+    {
+      "name": "coverage",
+      "inherits": "base",
+      "configurePreset": "coverage"
+    },
+    {
+      "name": "dist",
+      "inherits": "base",
+      "configurePreset": "dist"
+    }
+  ],
+  "packagePresets": [
+    {
+      "name": "dist",
+      "displayName": "Distribution packages",
+      "configurePreset": "dist",
+      "generators": ["TGZ", "STGZ", "DEB", "RPM"],
+      "variables": {
+        "CPACK_OUTPUT_FILE_PREFIX": "${sourceDir}/dist"
       }
     }
   ],
   "workflowPresets": [
     {
-      "name": "clang",
-      "displayName": "clang: config + build + test",
+      "name": "gcc-debug",
+      "displayName": "GCC Debug: configure, build and test",
       "steps": [
         {
           "type": "configure",
-          "name": "clang"
+          "name": "gcc-debug"
         },
         {
           "type": "build",
-          "name": "clang"
+          "name": "gcc-debug"
         },
         {
           "type": "test",
-          "name": "clang"
+          "name": "gcc-debug"
+        }
+      ]
+    },
+    {
+      "name": "gcc-release",
+      "displayName": "GCC Release: configure, build and test",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "gcc-release"
+        },
+        {
+          "type": "build",
+          "name": "gcc-release"
+        },
+        {
+          "type": "test",
+          "name": "gcc-release"
+        }
+      ]
+    },
+    {
+      "name": "clang-debug",
+      "displayName": "Clang Debug: configure, build and test",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-debug"
+        },
+        {
+          "type": "build",
+          "name": "clang-debug"
+        },
+        {
+          "type": "test",
+          "name": "clang-debug"
+        }
+      ]
+    },
+    {
+      "name": "clang-release",
+      "displayName": "Clang Release: configure, build and test",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "clang-release"
+        },
+        {
+          "type": "build",
+          "name": "clang-release"
+        },
+        {
+          "type": "test",
+          "name": "clang-release"
+        }
+      ]
+    },
+    {
+      "name": "coverage",
+      "displayName": "Coverage: configure, build, test, report and guard",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage"
+        },
+        {
+          "type": "test",
+          "name": "coverage"
+        },
+        {
+          "type": "build",
+          "name": "coverage-report"
+        }
+      ]
+    },
+    {
+      "name": "dist",
+      "displayName": "Distribution: configure, build, test and package",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "dist"
+        },
+        {
+          "type": "build",
+          "name": "dist"
+        },
+        {
+          "type": "test",
+          "name": "dist"
+        },
+        {
+          "type": "package",
+          "name": "dist"
+        }
+      ]
+    },
+    {
+      "name": "format",
+      "displayName": "Apply clang-format and cmake-format",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "format"
+        },
+        {
+          "type": "build",
+          "name": "format"
+        }
+      ]
+    },
+    {
+      "name": "format-check",
+      "displayName": "Check clang-format and cmake-format",
+      "steps": [
+        {
+          "type": "configure",
+          "name": "format"
+        },
+        {
+          "type": "build",
+          "name": "format-check"
         }
       ]
     }
