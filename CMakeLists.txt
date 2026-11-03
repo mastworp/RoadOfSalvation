@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 4.3.0)
-project(
-  RoadOfSalvation
-  VERSION 1.0.0
-  LANGUAGES CXX)
+project(RoadOfSalvation
+        VERSION 1.0.0
+        DESCRIPTION "A small TUI RPG game"
+        HOMEPAGE_URL "https://github.com/mastworp/RoadOfSalvation"
+        LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 include(GNUInstallDirs)
@@ -20,8 +21,11 @@ option(BUILD_TESTS "Build the unit tests." ON)
 include(CCache)
 include(CompilerWarnings)
 include(Sanitizers)
+include(Coverage)
+include(StaticLinking)
 include(StagingLayout)
 include(GameData)
+include(Format)
 
 add_subdirectory(src)
 
@@ -29,3 +33,5 @@ if(BUILD_TESTS)
   enable_testing()
   add_subdirectory(tests)
 endif()
+
+include(Packaging)

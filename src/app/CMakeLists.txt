@@ -29,3 +29,7 @@ target_link_libraries(core PUBLIC nlohmann_json::nlohmann_json PRIVATE RoadOfSal
 if(TARGET RoadOfSalvation::sanitizers)
   target_link_libraries(core PUBLIC RoadOfSalvation::sanitizers)
 endif()
+
+if(TARGET RoadOfSalvation::coverage)
+  target_link_libraries(core PRIVATE RoadOfSalvation::coverage)
+endif()
