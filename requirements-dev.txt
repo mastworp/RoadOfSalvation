@@ -1,0 +1,4 @@
+clang-format==22.1.8
+cmakelang==0.6.13
+gcovr==8.8
+pyyaml==6.0.3
