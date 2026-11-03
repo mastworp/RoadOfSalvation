@@ -1,0 +1,12 @@
+checks: >
+  clang-analyzer-*,
+  bugprone-*,
+  performance-*,
+  modernize-*,
+  readability-*,
+  -modernize-use-trailing-return-type,
+  -readability-magic-numbers,
+  -readability-redundant-declaration,
+  -readability-identifier-length
+WarningsAsErrors: ''
+HeaderFilterRegex: 'RoadOfSalvation/'
