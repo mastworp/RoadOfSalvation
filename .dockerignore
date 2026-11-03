@@ -3,6 +3,7 @@
 .idea
 .vscode
 .cache
+.venv
 build
 cmake-build-*
 install
