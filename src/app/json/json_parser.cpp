@@ -1,7 +1,7 @@
 #include "RoadOfSalvation/json/json_parser.hpp"
 
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #if defined(__APPLE__)
 #include <mach-o/dyld.h>
@@ -31,18 +31,14 @@ std::filesystem::path executable_dir() {
 std::filesystem::path data_dir() {
   return (executable_dir() / ROADOFSALVATION_DATA_REL_PATH).lexically_normal();
 }
-}
+}  // namespace
 
-
-json_parser::json_parser(const std::filesystem::path& file) : file_(
-    file.is_relative() ? data_dir() / file : file) {
-}
+json_parser::json_parser(const std::filesystem::path& file)
+    : file_(file.is_relative() ? data_dir() / file : file) {}
 
 auto json_parser::load() -> void {
-  std::fstream f{file_};
+  std::ifstream f{file_};
   data_ = json::parse(f);
 }
 
-auto json_parser::get_data() -> const nlohmann::json& {
-  return data_;
-}
+auto json_parser::get_data() -> const nlohmann::json& { return data_; }

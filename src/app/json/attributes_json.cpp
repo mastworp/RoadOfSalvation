@@ -3,8 +3,8 @@
 #include <stdexcept>
 #include <string>
 
-auto attributes_from_json(
-    const nlohmann::json& stats) -> std::map<attributes, std::size_t> {
+auto attributes_from_json(const nlohmann::json& stats)
+    -> std::map<attributes, std::size_t> {
   std::map<attributes, std::size_t> result;
   for (const auto& [key, value] : stats.items()) {
     const nlohmann::json json_key = key;

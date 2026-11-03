@@ -1,12 +1,12 @@
 #pragma once
 
-#include <map>
 #include <cstddef>
+#include <map>
 
 enum class attributes : std::size_t;
 
 class statistics final {
-public:
+ public:
   statistics() = default;
   ~statistics() = default;
   auto set(const std::map<attributes, std::size_t>& stats) -> void;
@@ -26,6 +26,6 @@ public:
   auto level_up() -> void;
   auto increase_attributes() -> void;
 
-private:
+ private:
   std::map<attributes, std::size_t> attributes_;
 };

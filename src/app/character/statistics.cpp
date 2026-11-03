@@ -1,9 +1,9 @@
 #include "RoadOfSalvation/character/statistics.hpp"
-#include "RoadOfSalvation/character/attributes.hpp"
-
 
 #include <algorithm>
 #include <ranges>
+
+#include "RoadOfSalvation/character/attributes.hpp"
 
 auto statistics::set(const std::map<attributes, std::size_t>& stats) -> void {
   attributes_ = stats;
@@ -17,13 +17,9 @@ auto statistics::get_level() -> std::size_t {
   return attributes_[attributes::level];
 }
 
-auto statistics::get_hp() -> std::size_t {
-  return attributes_[attributes::hp];
-}
+auto statistics::get_hp() -> std::size_t { return attributes_[attributes::hp]; }
 
-auto statistics::get_mp() -> std::size_t {
-  return attributes_[attributes::mp];
-}
+auto statistics::get_mp() -> std::size_t { return attributes_[attributes::mp]; }
 
 auto statistics::get_vigor() -> std::size_t {
   return attributes_[attributes::vigor];
@@ -57,9 +53,7 @@ auto statistics::get_luck() -> std::size_t {
   return attributes_[attributes::luck];
 }
 
-auto statistics::level_up() -> void {
-  ++attributes_[attributes::level];
-}
+auto statistics::level_up() -> void { ++attributes_[attributes::level]; }
 
 auto statistics::increase_attributes() -> void {
   for (auto& val : attributes_ | std::views::values) {
